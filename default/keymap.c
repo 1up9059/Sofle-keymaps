@@ -7,6 +7,7 @@ enum sofle_layers {
     _LOWER,
     _RAISE,
     _ADJUST,
+    _GAMES,
 };
 
 enum custom_keycodes {
@@ -19,7 +20,10 @@ enum custom_keycodes {
     KC_NXTWD,
     KC_LSTRT,
     KC_LEND,
-    KC_DLINE
+    KC_DLINE,
+    KC_GRAPH,
+    KC_TERM,
+    KC_MNGR,
 };
 enum  {
     TD_CAPLOCK, 
@@ -96,7 +100,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 ),
 /* RAISE
  * ,----------------------------------------.                    ,-----------------------------------------.
- * |      |      |      |      |      |      |                    |      |      |      |      |      |      |
+ * |      |  KC_GRAPH    |      |      |      |      |                    |      |      |      |      |      |      |
  * |------+------+------+------+------+------|                    |------+------+------+------+------+------|
  * | Esc  | Ins  | Pscr | Menu |      |      |                    |      | PWrd |  Up  | NWrd | DLine| Bspc |
  * |------+------+------+------+------+------|                    |------+------+------+------+------+------|
@@ -109,8 +113,8 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  *            `----------------------------------'           '------''---------------------------'
  */
 [_RAISE] = LAYOUT( \
-  XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,  XXXXXXX,                          XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX, XXXXXXX,  \
-  XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,  XXXXXXX,                          KC_PGUP, KC_PRVWD,    KC_UP, KC_NXTWD, KC_DLINE, KC_BSPC,  \
+  KC_MNGR, KC_GRAPH, XXXXXXX, XXXXXXX, KC_TERM,  XXXXXXX,                          XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX, XXXXXXX,  \
+  TG(_GAMES), XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,  XXXXXXX,                          KC_PGUP, KC_PRVWD,    KC_UP, KC_NXTWD, KC_DLINE, KC_BSPC,  \
   KC_CAPS,  KC_INS, KC_PSCR,  KC_END,  KC_HOME,  KC_APP,                          KC_PGDN,  KC_LEFT,  KC_DOWN,  KC_RGHT,  KC_FIND, XXXXXXX,  \
   KC_LSFT, KC_UNDO,  KC_CUT, KC_COPY, KC_PASTE,  KC_DEL, XXXXXXX,         XXXXXXX,XXXXXXX,  KC_CALC,  KC_MAIL,  KC_MYCM,  XXXXXXX, XXXXXXX,  \
                       _______, _______, _______, _______, KC_ENT,         KC_SPC, XXXXXXX,  KC_RALT, _______, _______ \
@@ -135,7 +139,16 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   XXXXXXX, XXXXXXX,   CG_TOGG,    XXXXXXX, XXXXXXX,  XXXXXXX,                       XXXXXXX, KC_VOLD, KC_MUTE, KC_VOLU, XXXXXXX, KC_BRIU, \
   XXXXXXX, XXXXXXX,   XXXXXXX,    XXXXXXX, XXXXXXX,  XXXXXXX, XXXXXXX,     XXXXXXX, XXXXXXX, KC_MPRV, KC_MPLY, KC_MNXT, XXXXXXX, KC_BRID, \
                           _______, _______, _______, _______, _______,     _______, _______, _______, _______, _______ \
-  )
+  ),
+
+
+[_GAMES] = LAYOUT( \
+  KC_ESC,      KC_1,   KC_2,     KC_3,    KC_4,     KC_5,                               KC_6,     KC_7,  KC_BSPC,  KC_PSLS, KC_PAST,    KC_P, \
+  TG(_GAMES),  KC_Q,   KC_W,     KC_E,    KC_R,     KC_T,                               KC_Y,     KC_U,    KC_P7,    KC_P8,   KC_P9, KC_PMNS, \
+  KC_TAB,      KC_A,   KC_S,     KC_D,    KC_F,     KC_G,                               KC_H,     KC_J,    KC_P4,    KC_P5,   KC_P6, KC_PPLS, \
+  KC_LSFT,     KC_Z,   KC_X,     KC_C,    KC_V,     KC_B,  KC_MUTE,        XXXXXXX,     KC_N,     KC_M,    KC_P1,    KC_P2,   KC_P3, KC_PENT, \
+                    KC_LGUI,  KC_LALT, KC_LCTL, KC_LOWER,   KC_SPC,         KC_ENT, KC_RAISE,  KC_RALT,  KC_P0,  KC_PDOT  \
+),
 };
 
 qk_tap_dance_action_t tap_dance_actions[] = {
@@ -279,6 +292,9 @@ static void print_status_narrow(void) {
             break;
         case _ADJUST:
             oled_write_P(PSTR("Conf\n"), false);
+            break;
+        case _GAMES:
+            oled_write_P(PSTR("Game\n"), false);
             break;
         default:
             oled_write_ln_P(PSTR("Undef\n"), false);
@@ -461,6 +477,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
                 unregister_code(KC_V);
             }
             return false;
+
         case KC_CUT:
             if (record->event.pressed) {
                 register_mods(mod_config(MOD_LCTL));
@@ -471,6 +488,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             }
             return false;
             break;
+
         case KC_UNDO:
             if (record->event.pressed) {
                 register_mods(mod_config(MOD_LCTL));
@@ -478,6 +496,38 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             } else {
                 unregister_mods(mod_config(MOD_LCTL));
                 unregister_code(KC_Z);
+            }
+            return false;
+
+                    case KC_TERM:
+            if (record->event.pressed) {
+                register_mods(mod_config(MOD_LALT));
+                register_code(KC_F4);
+            } else {
+                unregister_mods(mod_config(MOD_LALT));
+                unregister_code(KC_F4);
+            }
+            return false;
+
+        case KC_GRAPH:
+            if (record->event.pressed) {
+                register_mods(mod_config(MOD_LALT));
+                register_code(KC_F1);
+            } else {
+                unregister_mods(mod_config(MOD_LALT));
+                unregister_code(KC_F1);
+            }
+            return false;
+
+        case KC_MNGR:
+            if (record->event.pressed) {
+                register_mods(mod_config(MOD_LCTL));
+                register_mods(mod_config(MOD_LALT));
+                register_code(KC_DEL);
+            } else {
+                unregister_mods(mod_config(MOD_LCTL));
+                unregister_mods(mod_config(MOD_LALT));
+                unregister_code(KC_DEL);
             }
             return false;
     }
